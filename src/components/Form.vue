@@ -5,15 +5,23 @@
       <div class="row">
         <div class="item">
           <label for="last_name"> Фамилия </label>
-          <input v-model="formData.lastName" type="text" id="last_name" />
+          <input v-model.trim="formData.lastName" type="text" id="last_name" />
         </div>
         <div class="item">
           <label for="first_name"> Имя </label>
-          <input v-model="formData.firstName" type="text" id="first_name" />
+          <input
+            v-model.trim="formData.firstName"
+            type="text"
+            id="first_name"
+          />
         </div>
         <div class="item">
           <label for="second_name"> Отчество </label>
-          <input v-model="formData.secondName" type="text" id="second_name" />
+          <input
+            v-model.trim="formData.secondName"
+            type="text"
+            id="second_name"
+          />
         </div>
       </div>
       <div class="row">
@@ -24,15 +32,28 @@
       </div>
       <div class="item">
         <label for="email"> E-mail </label>
-        <input v-model="formData.email" type="text" id="email" />
+        <input v-model.trim="formData.email" type="text" id="email" />
       </div>
       <div class="row">
         <div class="item">
           <p>Пол</p>
           <div>
-            <input type="radio" id="man" name="sex" value="man" checked />
+            <input
+              v-model="formData.sex"
+              type="radio"
+              id="man"
+              name="sex"
+              value="man"
+              checked
+            />
             <label for="man">Мужской</label>
-            <input type="radio" id="woman" name="sex" value="woman" />
+            <input
+              v-model="formData.sex"
+              type="radio"
+              id="woman"
+              name="sex"
+              value="woman"
+            />
             <label for="woman">Женский</label>
           </div>
         </div>
@@ -43,7 +64,11 @@
       <div class="row">
         <div class="item">
           <label for="citizen_select">Гражданство</label>
-          <select id="citizen_select">
+          <select
+            v-if="allCountries.length"
+            v-model="formData.passport.citizenship"
+            id="citizen_select"
+          >
             <option
               v-for="country in allCountries"
               :value="country.nationality"
@@ -52,16 +77,19 @@
               {{ country.nationality }}
             </option>
           </select>
+          <select v-else id="citizen_select">
+            <option disabled>Ничего не найдено</option>
+          </select>
         </div>
       </div>
       <div v-if="isRussian()" class="row">
         <div class="item">
           <label for="series_passport"> Серия паспорта</label>
-          <input type="text" id="series_passport" />
+          <input type="text" maxlength="4" id="series_passport" />
         </div>
         <div class="item">
           <label for="number_passport"> Номер паспорта </label>
-          <input type="text" id="number_passport" />
+          <input type="text" maxlength="6" id="number_passport" />
         </div>
         <div class="item">
           <label for="date_issuance"> Дата выдачи </label>
@@ -97,7 +125,11 @@
           </div>
           <div class="item">
             <label for="foreign_country_passport"> Страна выдачи </label>
-            <select v-if="allCountries.length" id="foreign_country_passport">
+            <select
+              v-if="allCountries.length"
+              v-model="formData.passport.country"
+              id="foreign_country_passport"
+            >
               <option
                 v-for="country in allCountries"
                 :value="country.nationality"
@@ -106,13 +138,13 @@
                 {{ country.nationality }}
               </option>
             </select>
-            <select v-else>
+            <select v-else id="foreign_country_passport">
               <option value="empty">Ничего не найдено</option>
             </select>
           </div>
           <div class="item">
             <label for="foreign_type_passport"> Тип паспорта </label>
-            <select id="foreign_type_passport">
+            <select v-if="allPassportTypes.length" id="foreign_type_passport">
               <option
                 v-for="type in allPassportTypes"
                 :value="type.type"
@@ -120,6 +152,9 @@
               >
                 {{ type.type }}
               </option>
+            </select>
+            <select v-else>
+              <option value="empty">Ничего не найдено</option>
             </select>
           </div>
         </div>
@@ -129,18 +164,20 @@
           <p>Меняли ли фамилию?</p>
           <div>
             <input
+              v-model="formData.change_lastname.change"
               type="radio"
               id="no-change-fam"
               name="change-family"
-              value="no"
+              value="false"
               checked
             />
             <label for="no-change-fam">Нет</label>
             <input
+              v-model="formData.change_lastname.change"
               type="radio"
               id="change-fam"
               name="change-family"
-              value="yes"
+              value="true"
             />
             <label for="change-fam">Да</label>
           </div>
@@ -148,11 +185,19 @@
         <div v-show="changeLastName()" class="row">
           <div class="item">
             <label for="old_last_name"> Фамилия </label>
-            <input type="text" id="old_last_name" />
+            <input
+              v-model.trim="formData.change_lastname.old_lastname"
+              type="text"
+              id="old_last_name"
+            />
           </div>
           <div class="item">
             <label for="old_first_name"> Имя </label>
-            <input type="text" id="old_first_name" />
+            <input
+              v-model.trim="formData.change_lastname.old_firstname"
+              type="text"
+              id="old_first_name"
+            />
           </div>
         </div>
       </div>
@@ -170,36 +215,49 @@ import passportTypes from "@/assets/data/passport-types.json";
 export default {
   data() {
     return {
-      allCountries: citizenships,
-      allPassportTypes: passportTypes,
+      allCountries: [],
+      allPassportTypes: [],
       formData: {
         lastName: "",
         firstName: "",
         secondName: "",
         birthday: "",
         email: "",
-        sex: "",
+        sex: "man",
         passport: {
           citizenship: "",
           series: "",
           number_passport: "",
           date_issues: "",
+          lat_lastname: "",
+          lat_firstname: "",
+          country: "",
+          type: "",
         },
         change_lastname: {
-          change: false,
+          change: "false",
           old_lastname: "",
           old_firstname: "",
         },
       },
     };
   },
-
+  created() {
+    this.allCountries = citizenships;
+    this.allPassportTypes = passportTypes;
+  },
   methods: {
     isRussian() {
-      return false;
+      return this.formData.passport.citizenship === "Russia";
     },
     changeLastName() {
-      return false;
+      if (this.formData.change_lastname.change === "false") {
+        this.formData.change_lastname.old_lastname = "";
+        this.formData.change_lastname.old_firstname = "";
+        return false;
+      } else {
+        return true;
+      }
     },
     formSubmit() {
       console.log("submit", JSON.stringify(this.formData));
@@ -213,6 +271,7 @@ export default {
   margin: 0 auto;
   padding: 30px;
   max-width: 1200px;
+  min-width: 705px;
   font-size: 20px;
   background-color: #ffffff;
   border: 1px solid #dbdfe6;
