@@ -10,7 +10,15 @@
       <div class="row">
         <div class="item">
           <label for="last_name"> Фамилия </label>
-          <input v-model.trim="formData.lastName" type="text" id="last_name" />
+          <input
+            v-model.trim="formData.lastName"
+            type="text"
+            id="last_name"
+            :class="{ 'error--input': errors.isErrorLastName }"
+          />
+          <span v-if="errors.isErrorLastName" class="error">
+            {{ errors.isErrorLastName }}
+          </span>
         </div>
         <div class="item">
           <label for="first_name"> Имя </label>
@@ -18,7 +26,11 @@
             v-model.trim="formData.firstName"
             type="text"
             id="first_name"
+            :class="{ 'error--input': errors.isErrorFirstName }"
           />
+          <span v-if="errors.isErrorFirstName" class="error">
+            {{ errors.isErrorFirstName }}
+          </span>
         </div>
         <div class="item">
           <label for="second_name"> Отчество </label>
@@ -26,18 +38,38 @@
             v-model.trim="formData.secondName"
             type="text"
             id="second_name"
+            :class="{ 'error--input': errors.isErrorSecondName }"
           />
+          <span v-if="errors.isErrorSecondName" class="error">
+            {{ errors.isErrorSecondName }}
+          </span>
         </div>
       </div>
       <div class="row">
         <div class="item item-50">
           <label for="birthday"> Дата рождения </label>
-          <input v-model="formData.birthday" type="date" id="birthday" />
+          <input
+            v-model="formData.birthday"
+            type="date"
+            id="birthday"
+            :class="{ 'error--input': errors.isErrorBirthday }"
+          />
+          <span v-if="errors.isErrorBirthday" class="error">
+            {{ errors.isErrorBirthday }}
+          </span>
         </div>
       </div>
       <div class="item">
         <label for="email"> E-mail </label>
-        <input v-model.trim="formData.email" type="text" id="email" />
+        <input
+          v-model.trim="formData.email"
+          type="text"
+          id="email"
+          :class="{ 'error--input': errors.isErrorEmail }"
+        />
+        <span v-if="errors.isErrorEmail" class="error">
+          {{ errors.isErrorEmail }}
+        </span>
       </div>
       <div class="row">
         <div class="item">
@@ -141,11 +173,11 @@
         </p>
         <div class="row">
           <div class="item">
-            <label for="foreign_series_passport"> Серия паспорта </label>
+            <label for="foreign_number_passport"> Номер паспорта </label>
             <input
-              v-model="formData.passport.foreign_series"
+              v-model="formData.passport.foreign_number"
               type="text"
-              id="foreign_series_passport"
+              id="foreign_number_passport"
             />
           </div>
           <div class="item">
@@ -266,7 +298,7 @@ export default {
           rus_date_issues: "",
           foreign_lastname: "",
           foreign_firstname: "",
-          foreign_series: "",
+          foreign_number: "",
           foreign_country: "",
           foreign_type: "",
         },
@@ -275,6 +307,20 @@ export default {
           old_lastname: "",
           old_firstname: "",
         },
+      },
+      errors: {
+        isErrorLastName: "",
+        isErrorFirstName: "",
+        isErrorSecondName: "",
+        isErrorOldLastName: "",
+        isErrorOldFirstName: "",
+        isErrorBirthday: "",
+        isErrorEmail: "",
+        isErrorRusSeries: "",
+        isErrorRusNumberPassport: "",
+        isErrorForeignNumberPassport: "",
+        isErrorForeignLastname: "",
+        isErrorForeignFirstname: "",
       },
     };
   },
@@ -319,12 +365,59 @@ export default {
       }
     },
     formSubmit() {
-      console.log("submit", JSON.stringify(this.formData));
+      let errors = 0;
+      if (
+        this.formData.lastName &&
+        !this.validRussian(this.formData.lastName)
+      ) {
+        this.errors.isErrorLastName = "Вводите только русские буквы";
+        errors += 1;
+      } else {
+        this.errors.isErrorLastName = "";
+      }
+      if (
+        this.formData.firstName &&
+        !this.validRussian(this.formData.firstName)
+      ) {
+        this.errors.isErrorFirstName = "Вводите только русские буквы";
+        errors += 1;
+      } else {
+        this.errors.isErrorFirstName = "";
+      }
+      if (
+        this.formData.secondName &&
+        !this.validRussian(this.formData.secondName)
+      ) {
+        this.errors.isErrorSecondName = "Вводите только русские буквы";
+        errors += 1;
+      } else {
+        this.errors.isErrorSecondName = "";
+      }
+      if (this.formData.email && !this.validEmail(this.formData.email)) {
+        this.errors.isErrorEmail = "Введите корректный email";
+        errors += 1;
+      } else {
+        this.errors.isErrorEmail = "";
+      }
+
+      if (errors === 0) {
+        console.log("submit", JSON.stringify(this.formData));
+      }
     },
     clearEntities(obj) {
       for (const objKey in obj) {
         obj[objKey] = "";
       }
+    },
+    validRussian(str) {
+      const re = /[А-Яа-я]+/;
+      return re.test(str);
+    },
+    validDate() {},
+    validEmail(email) {
+      const re =
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return re.test(email);
     },
   },
   directives: {
@@ -432,5 +525,13 @@ input[type="radio"] + label {
 .citizen_select__dropdown li:hover {
   color: #ffffff;
   background-color: #269af7;
+}
+.error {
+  font-size: 12px;
+  color: #f72645;
+}
+
+.error--input {
+  border-color: #f72645;
 }
 </style>
