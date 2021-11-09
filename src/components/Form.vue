@@ -1,5 +1,10 @@
 <template>
-  <form @submit.prevent="formSubmit" class="form" autocomplete="off">
+  <form
+    @submit.prevent="formSubmit"
+    @keydown.enter.prevent
+    class="form"
+    autocomplete="off"
+  >
     <div>
       <h3>Личные данные</h3>
       <div class="row">
@@ -66,11 +71,10 @@
           <label for="citizen_select"> Гражданство </label>
           <input
             id="citizen_select"
-            v-model="formData.passport.citizenship"
+            v-model="searchCountry"
             @focus="isDropdownOpen = true"
             value="formData.passport.citizenship"
           />
-
           <div v-if="isDropdownOpen" class="citizen_select__dropdown">
             <ul v-if="allCountries.length">
               <li
@@ -215,6 +219,8 @@
 import citizenships from "@/assets/data/citizenships.json";
 import passportTypes from "@/assets/data/passport-types.json";
 import ClickOutside from "vue-click-outside";
+// import throttle from "../helpers/throttle";
+import debounce from "../helpers/debounce";
 
 export default {
   data() {
@@ -222,6 +228,7 @@ export default {
       isDropdownOpen: false,
       allCountries: [],
       allPassportTypes: [],
+      searchCountry: "",
       formData: {
         lastName: "",
         firstName: "",
@@ -250,6 +257,14 @@ export default {
   created() {
     this.allCountries = citizenships;
     this.allPassportTypes = passportTypes;
+    // this.throttleSearchCountries = throttle(this.getCountries, 2000);
+    this.debounceSearchCountries = debounce(this.getCountries, 2000);
+  },
+  watch: {
+    searchCountry(newValue) {
+      // this.throttleSearchCountries(newValue);
+      this.debounceSearchCountries(newValue);
+    },
   },
   methods: {
     hideDropdown() {
@@ -257,6 +272,7 @@ export default {
     },
     onCountryClicked(selectedCountry) {
       this.formData.passport.citizenship = selectedCountry;
+      this.searchCountry = selectedCountry;
       this.hideDropdown();
     },
     isRussian() {
@@ -270,6 +286,11 @@ export default {
       } else {
         return true;
       }
+    },
+    getCountries(searchCountry) {
+      this.allCountries = citizenships.filter((country) =>
+        country.nationality.toLowerCase().includes(searchCountry.toLowerCase())
+      );
     },
     formSubmit() {
       console.log("submit", JSON.stringify(this.formData));
