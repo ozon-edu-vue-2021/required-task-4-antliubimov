@@ -62,24 +62,27 @@
     <div class="passport">
       <h3>Паспортные данные</h3>
       <div class="row">
-        <div class="item">
-          <label for="citizen_select">Гражданство</label>
-          <select
-            v-if="allCountries.length"
-            v-model="formData.passport.citizenship"
+        <div v-click-outside="hideDropdown" class="item citizen_select__item">
+          <label for="citizen_select"> Гражданство </label>
+          <input
             id="citizen_select"
-          >
-            <option
-              v-for="country in allCountries"
-              :value="country.nationality"
-              :key="country.id"
-            >
-              {{ country.nationality }}
-            </option>
-          </select>
-          <select v-else id="citizen_select">
-            <option disabled>Ничего не найдено</option>
-          </select>
+            v-model="formData.passport.citizenship"
+            @focus="isDropdownOpen = true"
+            value="formData.passport.citizenship"
+          />
+
+          <div v-if="isDropdownOpen" class="citizen_select__dropdown">
+            <ul v-if="allCountries.length">
+              <li
+                v-for="country in allCountries"
+                :key="country.id"
+                @click="onCountryClicked(country.nationality)"
+              >
+                {{ country.nationality }}
+              </li>
+            </ul>
+            <div v-else class="empty">Ничего не найдено</div>
+          </div>
         </div>
       </div>
       <div v-if="isRussian()" class="row">
@@ -211,10 +214,12 @@
 <script>
 import citizenships from "@/assets/data/citizenships.json";
 import passportTypes from "@/assets/data/passport-types.json";
+import ClickOutside from "vue-click-outside";
 
 export default {
   data() {
     return {
+      isDropdownOpen: false,
       allCountries: [],
       allPassportTypes: [],
       formData: {
@@ -247,6 +252,13 @@ export default {
     this.allPassportTypes = passportTypes;
   },
   methods: {
+    hideDropdown() {
+      this.isDropdownOpen = false;
+    },
+    onCountryClicked(selectedCountry) {
+      this.formData.passport.citizenship = selectedCountry;
+      this.hideDropdown();
+    },
     isRussian() {
       return this.formData.passport.citizenship === "Russia";
     },
@@ -262,6 +274,9 @@ export default {
     formSubmit() {
       console.log("submit", JSON.stringify(this.formData));
     },
+  },
+  directives: {
+    ClickOutside,
   },
 };
 </script>
@@ -309,6 +324,16 @@ select {
   font-size: 16px;
   border: 3px solid #dadee5;
   border-radius: 5px;
+  outline: none;
+}
+
+input:active,
+input:focus,
+input:hover,
+select:active,
+select:focus,
+select:hover {
+  border: 3px solid #269af7;
 }
 
 input[type="radio"] + label {
@@ -328,5 +353,32 @@ input[type="radio"] + label {
 .text {
   font-size: 12px;
   margin-top: -15px;
+}
+.citizen_select__item {
+  position: relative;
+}
+
+.citizen_select__dropdown {
+  position: absolute;
+  top: 60px;
+  width: 100%;
+  border: 3px solid #dadee5;
+  border-radius: 5px;
+  color: #000000;
+  background-color: #ffffff;
+}
+.citizen_select__dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+  cursor: pointer;
+}
+.citizen_select__dropdown li,
+.citizen_select__dropdown div {
+  padding: 10px 20px;
+}
+.citizen_select__dropdown li:hover {
+  color: #ffffff;
+  background-color: #269af7;
 }
 </style>
