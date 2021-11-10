@@ -15,6 +15,7 @@
             type="text"
             id="last_name"
             :class="{ 'error--input': errors.isErrorLastName }"
+            required
           />
           <span v-if="errors.isErrorLastName" class="error">
             {{ errors.isErrorLastName }}
@@ -27,6 +28,7 @@
             type="text"
             id="first_name"
             :class="{ 'error--input': errors.isErrorFirstName }"
+            required
           />
           <span v-if="errors.isErrorFirstName" class="error">
             {{ errors.isErrorFirstName }}
@@ -53,6 +55,7 @@
             type="date"
             id="birthday"
             :class="{ 'error--input': errors.isErrorBirthday }"
+            required
           />
           <span v-if="errors.isErrorBirthday" class="error">
             {{ errors.isErrorBirthday }}
@@ -66,6 +69,7 @@
           type="text"
           id="email"
           :class="{ 'error--input': errors.isErrorEmail }"
+          required
         />
         <span v-if="errors.isErrorEmail" class="error">
           {{ errors.isErrorEmail }}
@@ -106,6 +110,7 @@
             v-model="searchCountry"
             @focus="isDropdownOpen = true"
             value="formData.passport.citizenship"
+            required
           />
           <div v-if="isDropdownOpen" class="citizen_select__dropdown">
             <ul v-if="allFilterCountries.length">
@@ -129,7 +134,12 @@
             type="text"
             maxlength="4"
             id="series_passport"
+            :class="{ 'error--input': errors.isErrorRusSeries }"
+            required
           />
+          <span v-if="errors.isErrorRusSeries" class="error">
+            {{ errors.isErrorRusSeries }}
+          </span>
         </div>
         <div class="item">
           <label for="number_passport"> Номер паспорта </label>
@@ -138,7 +148,12 @@
             type="text"
             maxlength="6"
             id="number_passport"
+            :class="{ 'error--input': errors.isErrorRusNumberPassport }"
+            required
           />
+          <span v-if="errors.isErrorRusNumberPassport" class="error">
+            {{ errors.isErrorRusNumberPassport }}
+          </span>
         </div>
         <div class="item">
           <label for="date_issuance"> Дата выдачи </label>
@@ -146,6 +161,7 @@
             v-model="formData.passport.rus_date_issues"
             type="date"
             id="date_issuance"
+            required
           />
         </div>
       </div>
@@ -157,7 +173,11 @@
               v-model="formData.passport.foreign_lastname"
               type="text"
               id="foreign_last_name"
+              :class="{ 'error--input': errors.isErrorForeignLastName }"
             />
+            <span v-if="errors.isErrorForeignLastName" class="error">
+              {{ errors.isErrorForeignLastName }}
+            </span>
           </div>
           <div class="item">
             <label for="foreign_first_name"> Имя на латинице </label>
@@ -165,7 +185,11 @@
               v-model="formData.passport.foreign_firstname"
               type="text"
               id="foreign_first_name"
+              :class="{ 'error--input': errors.isErrorForeignFirstName }"
             />
+            <span v-if="errors.isErrorForeignFirstName" class="error">
+              {{ errors.isErrorForeignFirstName }}
+            </span>
           </div>
         </div>
         <p class="text">
@@ -178,7 +202,12 @@
               v-model="formData.passport.foreign_number"
               type="text"
               id="foreign_number_passport"
+              maxlength="25"
+              :class="{ 'error--input': errors.isErrorForeignNumberPassport }"
             />
+            <span v-if="errors.isErrorForeignNumberPassport" class="error">
+              {{ errors.isErrorForeignNumberPassport }}
+            </span>
           </div>
           <div class="item">
             <label for="foreign_country_passport"> Страна выдачи </label>
@@ -186,6 +215,7 @@
               v-if="allCountries.length"
               v-model="formData.passport.foreign_country"
               id="foreign_country_passport"
+              required
             >
               <option
                 v-for="country in allCountries"
@@ -205,6 +235,7 @@
               v-if="allPassportTypes.length"
               v-model="formData.passport.foreign_type"
               id="foreign_type_passport"
+              required
             >
               <option
                 v-for="type in allPassportTypes"
@@ -230,7 +261,6 @@
               id="no-change-fam"
               name="change-family"
               value="false"
-              checked
             />
             <label for="no-change-fam">Нет</label>
             <input
@@ -250,7 +280,11 @@
               v-model.trim="formData.change_lastname.old_lastname"
               type="text"
               id="old_last_name"
+              :class="{ 'error--input': errors.isErrorOldLastName }"
             />
+            <span v-if="errors.isErrorOldLastName" class="error">
+              {{ errors.isErrorOldLastName }}
+            </span>
           </div>
           <div class="item">
             <label for="old_first_name"> Имя </label>
@@ -258,7 +292,11 @@
               v-model.trim="formData.change_lastname.old_firstname"
               type="text"
               id="old_first_name"
+              :class="{ 'error--input': errors.isErrorOldFirstName }"
             />
+            <span v-if="errors.isErrorOldFirstName" class="error">
+              {{ errors.isErrorOldFirstName }}
+            </span>
           </div>
         </div>
       </div>
@@ -319,8 +357,8 @@ export default {
         isErrorRusSeries: "",
         isErrorRusNumberPassport: "",
         isErrorForeignNumberPassport: "",
-        isErrorForeignLastname: "",
-        isErrorForeignFirstname: "",
+        isErrorForeignLastName: "",
+        isErrorForeignFirstName: "",
       },
     };
   },
@@ -342,7 +380,7 @@ export default {
       this.isDropdownOpen = false;
     },
     onCountryClicked(selectedCountry) {
-      this.clearEntities(this.formData.passport);
+      this.clearValues(this.formData.passport);
       this.formData.passport.citizenship = selectedCountry;
       this.searchCountry = selectedCountry;
       this.hideDropdown();
@@ -359,65 +397,159 @@ export default {
       if (this.formData.change_lastname.change === "false") {
         this.formData.change_lastname.old_lastname = "";
         this.formData.change_lastname.old_firstname = "";
+        this.errors.isErrorOldLastName = "";
+        this.errors.isErrorOldFirstName = "";
         return false;
-      } else {
-        return true;
       }
+      return true;
     },
     formSubmit() {
-      let errors = 0;
-      if (
-        this.formData.lastName &&
-        !this.validRussian(this.formData.lastName)
-      ) {
-        this.errors.isErrorLastName = "Вводите только русские буквы";
-        errors += 1;
-      } else {
-        this.errors.isErrorLastName = "";
+      this.validInput(
+        this.validRussian,
+        this.formData.lastName,
+        this.errors,
+        "isErrorLastName",
+        "Вводите только русские буквы"
+      );
+      this.validInput(
+        this.validRussian,
+        this.formData.firstName,
+        this.errors,
+        "isErrorFirstName",
+        "Вводите только русские буквы"
+      );
+      this.validInput(
+        this.validRussian,
+        this.formData.secondName,
+        this.errors,
+        "isErrorSecondName",
+        "Вводите только русские буквы"
+      );
+      if (this.formData.change_lastname.change === "true") {
+        this.validInput(
+          this.validRussian,
+          this.formData.change_lastname.old_lastname,
+          this.errors,
+          "isErrorOldLastName",
+          "Вводите только русские буквы"
+        );
+        this.validInput(
+          this.validRussian,
+          this.formData.change_lastname.old_firstname,
+          this.errors,
+          "isErrorOldFirstName",
+          "Вводите только русские буквы"
+        );
       }
-      if (
-        this.formData.firstName &&
-        !this.validRussian(this.formData.firstName)
-      ) {
-        this.errors.isErrorFirstName = "Вводите только русские буквы";
-        errors += 1;
-      } else {
-        this.errors.isErrorFirstName = "";
+      if (!this.isRussian()) {
+        this.validInput(
+          this.validEnglish,
+          this.formData.passport.foreign_lastname,
+          this.errors,
+          "isErrorForeignLastName",
+          "Вводите текст на латинице"
+        );
+        this.validInput(
+          this.validEnglish,
+          this.formData.passport.foreign_firstname,
+          this.errors,
+          "isErrorForeignFirstName",
+          "Вводите текст на латинице"
+        );
+        this.validInput(
+          this.validNumber,
+          this.formData.passport.foreign_number,
+          this.errors,
+          "isErrorForeignNumberPassport",
+          "Вводите только цифры"
+        );
       }
-      if (
-        this.formData.secondName &&
-        !this.validRussian(this.formData.secondName)
-      ) {
-        this.errors.isErrorSecondName = "Вводите только русские буквы";
-        errors += 1;
-      } else {
-        this.errors.isErrorSecondName = "";
-      }
-      if (this.formData.email && !this.validEmail(this.formData.email)) {
-        this.errors.isErrorEmail = "Введите корректный email";
-        errors += 1;
-      } else {
-        this.errors.isErrorEmail = "";
+      if (this.isRussian()) {
+        this.validInput(
+          this.validRussianPassportSeries,
+          this.formData.passport.rus_series,
+          this.errors,
+          "isErrorRusSeries",
+          "Вводите только 4 цифр"
+        );
+        this.validInput(
+          this.validRussianPassportNumber,
+          this.formData.passport.rus_number,
+          this.errors,
+          "isErrorRusNumberPassport",
+          "Вводите только 6 цифр"
+        );
       }
 
-      if (errors === 0) {
+      this.validInput(
+        this.validEmail,
+        this.formData.email,
+        this.errors,
+        "isErrorEmail",
+        "Введите корректный email"
+      );
+
+      this.validInput(
+        this.validDate,
+        this.formData.birthday,
+        this.errors,
+        "isErrorBirthday",
+        "Вы из будущего?"
+      );
+
+      if (this.isNotErrors(this.errors)) {
         console.log("submit", JSON.stringify(this.formData));
       }
     },
-    clearEntities(obj) {
+    clearValues(obj) {
       for (const objKey in obj) {
         obj[objKey] = "";
       }
     },
+    validInput(fn, data, objErr, err, message) {
+      objErr[err] = !data || !fn(data) ? message : "";
+    },
+    isNotErrors(objErrors) {
+      return Object.values(objErrors).every((err) => err.length === 0);
+    },
+
+    // const reValidRussian = /^[а-яА-Я]+$/;
+    // const reValidEnglish = /^[a-zA-Z]+$/;
+    // const reValidNumber = /^\d+$/;
+    // const reValidRussianPassportNumber = /^\d{6}$/;
+    // const reValidRussianPassportSeries = /^\d{4}$/;
+    // const reValidEmail =
+    //     /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
     validRussian(str) {
-      const re = /[А-Яа-я]+/;
+      const re = /^[а-яА-Я]+$/;
       return re.test(str);
     },
-    validDate() {},
+    validDate(str) {
+      let selectDate = new Date(str);
+      let now = new Date();
+      return +selectDate < +now;
+    },
     validEmail(email) {
       const re =
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       return re.test(email);
+    },
+    validEnglish(str) {
+      const re = /^[a-zA-Z]+$/;
+      return re.test(str);
+    },
+    validNumber(str) {
+      const re = /^\d+$/;
+      return re.test(str);
+    },
+    validRussianPassportNumber(str) {
+      const re = /^\d{6}$/;
+      return re.test(str);
+    },
+    validRussianPassportSeries(str) {
+      const re = /^\d{4}$/;
+      return re.test(str);
     },
   },
   directives: {
