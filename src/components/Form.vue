@@ -404,101 +404,138 @@ export default {
       return true;
     },
     formSubmit() {
-      this.validInput(
-        this.validRussian,
-        this.formData.lastName,
-        this.errors,
-        "isErrorLastName",
-        "Вводите только русские буквы"
-      );
-      this.validInput(
-        this.validRussian,
-        this.formData.firstName,
-        this.errors,
-        "isErrorFirstName",
-        "Вводите только русские буквы"
-      );
-      this.validInput(
-        this.validRussian,
-        this.formData.secondName,
-        this.errors,
-        "isErrorSecondName",
-        "Вводите только русские буквы"
-      );
+      const reValidRussian = /^[а-яА-Я]+$/;
+      const reValidEnglish = /^[a-zA-Z]+$/;
+      const reValidNumber = /^\d+$/;
+      const reValidRussianPassportNumber = /^\d{6}$/;
+      const reValidRussianPassportSeries = /^\d{4}$/;
+      const reValidEmail =
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+      const checkObjects = {
+        lastName: {
+          fn: this.validStr,
+          expression: reValidRussian,
+          data: this.formData.lastName,
+          objErr: this.errors,
+          err: "isErrorLastName",
+          message: "Вводите только русские буквы",
+        },
+        firstName: {
+          fn: this.validStr,
+          expression: reValidRussian,
+          data: this.formData.firstName,
+          objErr: this.errors,
+          err: "isErrorFirstName",
+          message: "Вводите только русские буквы",
+        },
+        secondName: {
+          fn: this.validStr,
+          expression: reValidRussian,
+          data: this.formData.secondName,
+          objErr: this.errors,
+          err: "isErrorSecondName",
+          message: "Вводите только русские буквы",
+        },
+        oldLastName: {
+          fn: this.validStr,
+          expression: reValidRussian,
+          data: this.formData.change_lastname.old_lastname,
+          objErr: this.errors,
+          err: "isErrorOldLastName",
+          message: "Вводите только русские буквы",
+        },
+        oldFirstName: {
+          fn: this.validStr,
+          expression: reValidRussian,
+          data: this.formData.change_lastname.old_firstname,
+          objErr: this.errors,
+          err: "isErrorOldFirstName",
+          message: "Вводите только русские буквы",
+        },
+        birthday: {
+          fn: this.validDate,
+          expression: "",
+          data: this.formData.birthday,
+          objErr: this.errors,
+          err: "isErrorBirthday",
+          message: "Вы из будущего?",
+        },
+        email: {
+          fn: this.validStr,
+          expression: reValidEmail,
+          data: this.formData.email,
+          objErr: this.errors,
+          err: "isErrorEmail",
+          message: "Введите корректный email",
+        },
+        foreignLastName: {
+          fn: this.validStr,
+          expression: reValidEnglish,
+          data: this.formData.passport.foreign_lastname,
+          objErr: this.errors,
+          err: "isErrorForeignLastName",
+          message: "Вводите текст на латинице",
+        },
+        foreignFirstName: {
+          fn: this.validStr,
+          expression: reValidEnglish,
+          data: this.formData.passport.foreign_firstname,
+          objErr: this.errors,
+          err: "isErrorForeignFirstName",
+          message: "Вводите текст на латинице",
+        },
+        foreignNumberPassport: {
+          fn: this.validStr,
+          expression: reValidNumber,
+          data: this.formData.passport.foreign_number,
+          objErr: this.errors,
+          err: "isErrorForeignNumberPassport",
+          message: "Вводите только цифры",
+        },
+        rusSeriesPassport: {
+          fn: this.validStr,
+          expression: reValidRussianPassportSeries,
+          data: this.formData.passport.rus_series,
+          objErr: this.errors,
+          err: "isErrorRusSeries",
+          message: "Вводите только 4 цифр",
+        },
+        rusNumberPassport: {
+          fn: this.validStr,
+          expression: reValidRussianPassportNumber,
+          data: this.formData.passport.rus_number,
+          objErr: this.errors,
+          err: "isErrorRusNumberPassport",
+          message: "Вводите только 6 цифр",
+        },
+      };
+
+      this.validInput(checkObjects.lastName);
+      this.validInput(checkObjects.firstName);
+      this.validInput(checkObjects.secondName);
+      this.validInput(checkObjects.birthday);
+      this.validInput(checkObjects.email);
+
       if (this.formData.change_lastname.change === "true") {
-        this.validInput(
-          this.validRussian,
-          this.formData.change_lastname.old_lastname,
-          this.errors,
-          "isErrorOldLastName",
-          "Вводите только русские буквы"
-        );
-        this.validInput(
-          this.validRussian,
-          this.formData.change_lastname.old_firstname,
-          this.errors,
-          "isErrorOldFirstName",
-          "Вводите только русские буквы"
-        );
+        this.validInput(checkObjects.oldLastName);
+        this.validInput(checkObjects.oldFirstName);
       }
+
       if (!this.isRussian()) {
-        this.validInput(
-          this.validEnglish,
-          this.formData.passport.foreign_lastname,
-          this.errors,
-          "isErrorForeignLastName",
-          "Вводите текст на латинице"
-        );
-        this.validInput(
-          this.validEnglish,
-          this.formData.passport.foreign_firstname,
-          this.errors,
-          "isErrorForeignFirstName",
-          "Вводите текст на латинице"
-        );
-        this.validInput(
-          this.validNumber,
-          this.formData.passport.foreign_number,
-          this.errors,
-          "isErrorForeignNumberPassport",
-          "Вводите только цифры"
-        );
+        this.validInput(checkObjects.foreignLastName);
+        this.validInput(checkObjects.foreignFirstName);
+        this.validInput(checkObjects.foreignNumberPassport);
       }
+
       if (this.isRussian()) {
-        this.validInput(
-          this.validRussianPassportSeries,
-          this.formData.passport.rus_series,
-          this.errors,
-          "isErrorRusSeries",
-          "Вводите только 4 цифр"
-        );
-        this.validInput(
-          this.validRussianPassportNumber,
-          this.formData.passport.rus_number,
-          this.errors,
-          "isErrorRusNumberPassport",
-          "Вводите только 6 цифр"
-        );
+        this.validInput(checkObjects.rusSeriesPassport);
+        this.validInput(checkObjects.rusNumberPassport);
       }
-
-      this.validInput(
-        this.validEmail,
-        this.formData.email,
-        this.errors,
-        "isErrorEmail",
-        "Введите корректный email"
-      );
-
-      this.validInput(
-        this.validDate,
-        this.formData.birthday,
-        this.errors,
-        "isErrorBirthday",
-        "Вы из будущего?"
-      );
 
       if (this.isNotErrors(this.errors)) {
         console.log("submit", JSON.stringify(this.formData));
+        alert("Форма отправлена!!!");
       }
     },
     clearValues(obj) {
@@ -506,50 +543,21 @@ export default {
         obj[objKey] = "";
       }
     },
-    validInput(fn, data, objErr, err, message) {
-      objErr[err] = !data || !fn(data) ? message : "";
+    validInput(obj) {
+      let { fn, expression, data, objErr, err, message } = obj;
+      objErr[err] = !data || !fn(data, expression) ? message : "";
     },
-    isNotErrors(objErrors) {
-      return Object.values(objErrors).every((err) => err.length === 0);
-    },
-
-    // const reValidRussian = /^[а-яА-Я]+$/;
-    // const reValidEnglish = /^[a-zA-Z]+$/;
-    // const reValidNumber = /^\d+$/;
-    // const reValidRussianPassportNumber = /^\d{6}$/;
-    // const reValidRussianPassportSeries = /^\d{4}$/;
-    // const reValidEmail =
-    //     /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
-    validRussian(str) {
-      const re = /^[а-яА-Я]+$/;
-      return re.test(str);
+    validStr(str, expression) {
+      const regex = new RegExp(expression, "g");
+      return regex.test(str);
     },
     validDate(str) {
       let selectDate = new Date(str);
       let now = new Date();
       return +selectDate < +now;
     },
-    validEmail(email) {
-      const re =
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-      return re.test(email);
-    },
-    validEnglish(str) {
-      const re = /^[a-zA-Z]+$/;
-      return re.test(str);
-    },
-    validNumber(str) {
-      const re = /^\d+$/;
-      return re.test(str);
-    },
-    validRussianPassportNumber(str) {
-      const re = /^\d{6}$/;
-      return re.test(str);
-    },
-    validRussianPassportSeries(str) {
-      const re = /^\d{4}$/;
-      return re.test(str);
+    isNotErrors(objErrors) {
+      return Object.values(objErrors).every((err) => err.length === 0);
     },
   },
   directives: {
